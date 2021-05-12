@@ -12,7 +12,7 @@ NIO 需要从两个层面来解释，系统层面是讲的是 no block io 及 �
 
 阻塞性IO，特点是：每连接每线程 , 弊端：线程太多，调度 资源 ,阻塞
 
-实例代码
+BIO 示例代码
 
 ```java
 public class ServerSocketDemo {
@@ -74,6 +74,62 @@ nio : NONBLOCK  一个线程处理多个连接
 #### 相关概念
 
  Nio --> 多路复用器 select poll epoll --> netty
+
+NIO 示例代码：循环发起系统调用，消耗性能
+
+```java
+
+public class NIOSocketDemo {
+
+
+    public static void main(String[] args) throws IOException {
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        int port = 9999;
+        serverSocketChannel.socket().bind(new InetSocketAddress(port));
+        System.out.println("server start .... in port:"+port);
+        //设置成非阻塞模式
+        serverSocketChannel.configureBlocking(false);
+
+        /**
+         *
+         * 循环发起系统调用，消耗性能
+         */
+        while(true){
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            SocketChannel socketChannel = serverSocketChannel.accept();
+            System.out.println("socketChannel accept");
+            //在非阻塞模式下，accept() 方法会立刻返回，如果还没有新进来的连接,返回的将是null。 因此，需要检查返回的SocketChannel是否是null.如：
+            if(null != socketChannel){
+                //do something with socketChannel...
+                ByteBuffer byteBuffer =  ByteBuffer.allocate(20);
+                //放开读取阻塞
+                socketChannel.configureBlocking(false);
+                while (true){
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    int read = socketChannel.read(byteBuffer);
+                    System.out.println("read....."+read);
+                    if(read>0){
+                        byteBuffer.flip();  //make buffer ready for read
+                        while(byteBuffer.hasRemaining()) {
+                            System.out.println((char)byteBuffer.get());
+                        }
+                    }
+                }
+
+            }
+        }
+
+    }
+}
+```
 
 
 
