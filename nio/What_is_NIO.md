@@ -75,7 +75,7 @@ nio : NONBLOCK  一个线程处理多个连接
 
  Nio --> 多路复用器 select poll epoll --> netty
 
-NIO 示例代码：循环发起系统调用，消耗性能
+NIO 示例代码：循环发起系统调用，消耗性能(通过多路复用器解决)
 
 ```java
 
